@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Upload and Share</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    #video-link {
+      margin-top: 20px;
+      display: none;
+    }
+    input[type="file"] {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Upload and Share Your Video</h1>
+  <input type="file" id="videoInput" accept="video/*">
+  <button id="uploadButton">Generate Link</button>
+  <div id="video-link">
+    <p>Share this link:</p>
+    <a id="shareLink" href="#" target="_blank">Your Video Link</a>
+  </div>
+
+  <script>
+    document.getElementById('uploadButton').addEventListener('click', function() {
+      const videoInput = document.getElementById('videoInput');
+      if (!videoInput.files[0]) {
+        alert('Please select a video file first.');
+        return;
+      }
+
+      const file = videoInput.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(event) {
+        // تحويل الفيديو إلى Base64
+        const videoData = event.target.result;
+
+        // إنشاء ID فريد
+        const uniqueId = `video-${Date.now()}`;
+        
+        // تخزين الفيديو في localStorage
+        localStorage.setItem(uniqueId, videoData);
+
+        // إنشاء رابط فريد
+        const shareLink = `${window.location.origin}${window.location.pathname}?videoId=${uniqueId}`;
+        document.getElementById('shareLink').href = shareLink;
+        document.getElementById('shareLink').textContent = shareLink;
+        document.getElementById('video-link').style.display = 'block';
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+    // عرض الفيديو إذا كان هناك videoId في الرابط
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get('videoId');
+    if (videoId) {
+      const videoData = localStorage.getItem(videoId);
+      if (videoData) {
+        document.body.innerHTML = `
+          <h1>Your Video</h1>
+          <video controls style="width: 100%; max-width: 600px;">
+            <source src="${videoData}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        `;
+      } else {
+        document.body.innerHTML = '<h1>Video not found!</h1>';
+      }
+    }
+  </script>
+</body>
+</html>
